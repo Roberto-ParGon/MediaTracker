@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.textfield.CustomTextField?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mx.uv.mediatracking.controller.MainController" prefHeight="600.0" prefWidth="800.0">
+
+    <top>
+        <VBox alignment="CENTER" spacing="15" style="-fx-background-color: -fx-background;">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20" />
+            </padding>
+            <Label text="Mi Biblioteca Multimedia" style="-fx-font-size: 28px; -fx-text-fill: #f5c2e7;"/>
+            <HBox alignment="CENTER" maxWidth="400">
+                <CustomTextField fx:id="searchField" promptText="Buscar película, serie o anime..." HBox.hgrow="ALWAYS"/>
+                <Button fx:id="searchButton" text="Buscar" onAction="#handleSearchAction" styleClass="btn, btn-primary" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <org.controlsfx.control.GridView fx:id="libraryGridView" />
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_LEFT" style="-fx-background-color: -fx-control-inner-background;">
+            <padding>
+                <Insets top="5" right="10" bottom="5" left="10" />
+            </padding>
+            <Label fx:id="statusLabel" text="Listo." styleClass="text-muted"/>
+        </HBox>
+    </bottom>
+</BorderPane>

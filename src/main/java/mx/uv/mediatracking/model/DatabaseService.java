@@ -1,20 +1,15 @@
 package mx.uv.mediatracking.model;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
+import java.sql.*;
+
 
 public class DatabaseService {
 
     public static Connection getConnection() throws SQLException {
-        // Construimos la URL usando los valores de ConfigLoader
         String url = "jdbc:mariadb://"
                 + ConfigLoader.getDbHost() + ":"
                 + ConfigLoader.getDbPort() + "/"
                 + ConfigLoader.getDbName();
-
         return DriverManager.getConnection(url, ConfigLoader.getDbUser(), ConfigLoader.getDbPassword());
     }
 
@@ -53,11 +48,48 @@ public class DatabaseService {
         }
     }
 
-    public void saveSeries(Serie serie) {
 
+    public void saveMedia(Media media) throws SQLException {
+        if (media instanceof Movie) {
+            saveMovie((Movie) media);
+        } else if (media instanceof Serie) {
+            saveSerie((Serie) media);
+        }
     }
 
-    public List<Serie> getAllSeries() {
-        return null;
+    private void saveMovie(Movie movie) throws SQLException {
+        String sql = "INSERT INTO movies (id, title, overview, poster_path, status) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title=title;";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, movie.getId());
+            pstmt.setString(2, movie.getTitle());
+            pstmt.setString(3, movie.getOverview());
+            pstmt.setString(4, movie.getPosterPath());
+            pstmt.setString(5, "Sin empezar");
+            pstmt.executeUpdate();
+        }
+    }
+
+    private void saveSerie(Serie serie) throws SQLException {
+        String sql = "INSERT INTO series (id, title, overview, poster_path, status) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title=title;";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, serie.getId());
+            pstmt.setString(2, serie.getTitle());
+            pstmt.setString(3, serie.getOverview());
+            pstmt.setString(4, serie.getPosterPath());
+            pstmt.setString(5, "Sin empezar");
+            pstmt.executeUpdate();
+        }
+    }
+
+    public void deleteMedia(Media media) throws SQLException {
+        String table = (media instanceof Movie) ? "movies" : "series";
+        String sql = "DELETE FROM " + table + " WHERE id = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, media.getId());
+            pstmt.executeUpdate();
+        }
     }
 }

@@ -29,3 +29,28 @@
     -fx-border-radius: 5;
     -fx-background-radius: 5;
 }
+
+.add-button-overlay {
+    -fx-background-color: rgba(40, 42, 54, 0.8);
+    -fx-text-fill: #f8f8f2;
+    -fx-border-color: #bd93f9;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-font-weight: bold;
+}
+
+.add-button-overlay:hover {
+    -fx-background-color: rgba(68, 71, 90, 0.9);
+}
+
+.btn-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-accent;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+    -fx-underline: true;
+    -fx-cursor: hand;
+}
+.btn-link:hover {
+    -fx-text-fill: #f5c2e7;
+}

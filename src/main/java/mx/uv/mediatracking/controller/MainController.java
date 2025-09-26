@@ -1,12 +1,12 @@
 package mx.uv.mediatracking.controller;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.util.Duration;
 import mx.uv.mediatracking.model.ApiService;
 import mx.uv.mediatracking.model.DatabaseService;
@@ -19,8 +19,12 @@ import java.util.List;
 public class MainController {
 
     @FXML private org.controlsfx.control.textfield.CustomTextField searchField;
-    @FXML private Button searchButton;
+    @FXML private ScrollPane libraryScrollPane;
     @FXML private GridView<Media> libraryGridView;
+    @FXML private ScrollPane searchResultsScrollPane;
+    @FXML private GridView<Media> searchResultsGridView;
+    @FXML private Label mainContentLabel;
+    @FXML private Button backButton;
     @FXML private Label statusLabel;
 
     private final ApiService apiService = new ApiService();
@@ -28,18 +32,41 @@ public class MainController {
 
     @FXML
     public void initialize() {
-        libraryGridView.setCellFactory(param -> new MediaGridCell(this::addMediaToLibrary));
-        libraryGridView.setCellWidth(150);
-        libraryGridView.setCellHeight(240);
-        libraryGridView.setHorizontalCellSpacing(15);
-        libraryGridView.setVerticalCellSpacing(15);
+        libraryGridView.setCellFactory(param -> new MediaGridCell(null, MediaGridCell.CellType.LIBRARY_ITEM));
+        configureGridView(libraryGridView);
+
+        searchResultsGridView.setCellFactory(param -> new MediaGridCell(this::addMediaToLibrary, MediaGridCell.CellType.SEARCH_RESULT));
+        configureGridView(searchResultsGridView);
+
         statusLabel.setText("Bienvenido a tu biblioteca.");
+        loadLibrary();
+    }
+
+    private void loadLibrary() {
+        Task<List<Media>> loadTask = new Task<>() {
+            @Override
+            protected List<Media> call() {
+                return dbService.getAllMediaFromLibrary();
+            }
+        };
+        loadTask.setOnSucceeded(e -> {
+            libraryGridView.setItems(FXCollections.observableArrayList(loadTask.getValue()));
+        });
+        new Thread(loadTask).start();
+    }
+
+    private void configureGridView(GridView<Media> gridView) {
+        gridView.setCellWidth(150);
+        gridView.setCellHeight(240);
+        gridView.setHorizontalCellSpacing(15);
+        gridView.setVerticalCellSpacing(15);
     }
 
     private void addMediaToLibrary(Media media) {
         try {
             dbService.saveMedia(media);
             showNotification("Añadido a la biblioteca", media);
+            loadLibrary();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -49,13 +76,13 @@ public class MainController {
         Notifications notificationBuilder = Notifications.create()
                 .title(title)
                 .text(media.getTitle())
-                .graphic(null)
                 .hideAfter(Duration.seconds(5))
                 .position(Pos.BOTTOM_RIGHT)
                 .onAction(actionEvent -> {
                     try {
                         dbService.deleteMedia(media);
-                        Notifications.create().title("Eliminación revertida").showInformation();
+                        loadLibrary();
+                        Notifications.create().title("Acción deshecha").position(Pos.BOTTOM_RIGHT).showInformation();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -71,6 +98,11 @@ public class MainController {
             return;
         }
 
+        libraryScrollPane.setVisible(false);
+        searchResultsScrollPane.setVisible(true);
+        mainContentLabel.setText("Resultados de búsqueda");
+        backButton.setVisible(true);
+
         Task<List<Media>> searchTask = new Task<>() {
             @Override
             protected List<Media> call() throws Exception {
@@ -80,8 +112,7 @@ public class MainController {
 
         searchTask.setOnSucceeded(event -> {
             List<Media> results = searchTask.getValue();
-            ObservableList<Media> mediaList = FXCollections.observableArrayList(results);
-            libraryGridView.setItems(mediaList);
+            searchResultsGridView.setItems(FXCollections.observableArrayList(results));
             statusLabel.setText("Se encontraron " + results.size() + " resultados.");
         });
 
@@ -92,5 +123,17 @@ public class MainController {
 
         statusLabel.setText("Buscando \"" + query + "\"...");
         new Thread(searchTask).start();
+    }
+
+    @FXML
+    private void handleBackAction() {
+        searchField.clear();
+        searchResultsGridView.getItems().clear();
+
+        searchResultsScrollPane.setVisible(false);
+        backButton.setVisible(false);
+        libraryScrollPane.setVisible(true);
+        mainContentLabel.setText("Mi Biblioteca");
+        statusLabel.setText("Listo.");
     }
 }

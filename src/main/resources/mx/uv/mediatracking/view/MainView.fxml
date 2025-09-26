@@ -1,35 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.controlsfx.control.GridView?>
 <?import org.controlsfx.control.textfield.CustomTextField?>
 
-<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mx.uv.mediatracking.controller.MainController" prefHeight="600.0" prefWidth="800.0">
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="mx.uv.mediatracking.controller.MainController" prefHeight="700.0" prefWidth="900.0">
 
     <top>
-        <VBox alignment="CENTER" spacing="15" style="-fx-background-color: -fx-background;">
+        <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: -fx-background;" HBox.hgrow="ALWAYS">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="20" />
+                <Insets bottom="15" left="20" right="20" top="15" />
             </padding>
-            <Label text="Mi Biblioteca Multimedia" style="-fx-font-size: 28px; -fx-text-fill: #f5c2e7;"/>
-            <HBox alignment="CENTER" maxWidth="400">
-                <CustomTextField fx:id="searchField" promptText="Buscar película, serie o anime..." HBox.hgrow="ALWAYS"/>
-                <Button fx:id="searchButton" text="Buscar" onAction="#handleSearchAction" styleClass="btn, btn-primary" />
-            </HBox>
-        </VBox>
+            <Label text="Biblioteca" style="-fx-font-size: 24px; -fx-text-fill: #f5c2e7;"/>
+            <Region HBox.hgrow="ALWAYS" />
+            <CustomTextField fx:id="searchField" promptText="Realizar búsqueda..." prefWidth="300"/>
+            <Button fx:id="searchButton" onAction="#handleSearchAction" styleClass="btn, btn-primary" text="Buscar"/>
+        </HBox>
     </top>
 
     <center>
-        <org.controlsfx.control.GridView fx:id="libraryGridView" />
+        <VBox spacing="10" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets left="15" right="15" top="10"/>
+            </padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label fx:id="mainContentLabel" text="Mi Biblioteca" style="-fx-font-size: 18px;"/>
+                <Button fx:id="backButton" text="‹ Regresar" onAction="#handleBackAction" styleClass="btn-link" visible="false"/>
+            </HBox>
+
+            <StackPane fx:id="contentStackPane" VBox.vgrow="ALWAYS">
+
+                <ScrollPane fx:id="libraryScrollPane" fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER" style="-fx-background-color: transparent;">
+                    <GridView fx:id="libraryGridView"/>
+                </ScrollPane>
+
+                <ScrollPane fx:id="searchResultsScrollPane" fitToWidth="true" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER" style="-fx-background-color: transparent;" visible="false">
+                    <GridView fx:id="searchResultsGridView"/>
+                </ScrollPane>
+            </StackPane>
+        </VBox>
     </center>
 
     <bottom>
         <HBox alignment="CENTER_LEFT" style="-fx-background-color: -fx-control-inner-background;">
             <padding>
-                <Insets top="5" right="10" bottom="5" left="10" />
+                <Insets bottom="5" left="10" right="10" top="5" />
             </padding>
-            <Label fx:id="statusLabel" text="Listo." styleClass="text-muted"/>
+            <Label fx:id="statusLabel" styleClass="text-muted" text="Listo."/>
         </HBox>
     </bottom>
 </BorderPane>

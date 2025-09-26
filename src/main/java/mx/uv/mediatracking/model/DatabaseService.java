@@ -1,6 +1,9 @@
 package mx.uv.mediatracking.model;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class DatabaseService {
@@ -92,4 +95,68 @@ public class DatabaseService {
             pstmt.executeUpdate();
         }
     }
+
+    public List<Media> getLatestActivity(int limit) {
+
+        String sql = "(SELECT id, title, overview, poster_path, 'movie' as type FROM movies ORDER BY id DESC LIMIT ?) " +
+                "UNION ALL " +
+                "(SELECT id, title, overview, poster_path, 'serie' as type FROM series ORDER BY id DESC LIMIT ?)";
+
+        List<Media> latestMedia = new ArrayList<>();
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, limit);
+            pstmt.setInt(2, limit);
+
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Media media;
+                if ("movie".equals(rs.getString("type"))) {
+                    media = new Movie();
+                } else {
+                    media = new Serie();
+                }
+                media.setId(rs.getInt("id"));
+                media.setTitle(rs.getString("title"));
+                media.setOverview(rs.getString("overview"));
+                media.setPosterPath(rs.getString("poster_path"));
+                latestMedia.add(media);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return latestMedia.stream().limit(limit).collect(Collectors.toList());
+    }
+
+    public List<Media> getAllMediaFromLibrary() {
+        String sql = "(SELECT id, title, overview, poster_path, 'movie' as type FROM movies) " +
+                "UNION ALL " +
+                "(SELECT id, title, overview, poster_path, 'serie' as type FROM series)";
+
+        List<Media> libraryMedia = new ArrayList<>();
+
+        try (Connection conn = getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Media media;
+                if ("movie".equals(rs.getString("type"))) {
+                    media = new Movie();
+                } else {
+                    media = new Serie();
+                }
+                media.setId(rs.getInt("id"));
+                media.setTitle(rs.getString("title"));
+                media.setOverview(rs.getString("overview"));
+                media.setPosterPath(rs.getString("poster_path"));
+                libraryMedia.add(media);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return libraryMedia;
+    }
+
 }

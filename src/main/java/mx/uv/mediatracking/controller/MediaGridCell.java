@@ -14,15 +14,18 @@ import java.io.InputStream;
 import java.util.function.Consumer;
 
 public class MediaGridCell extends GridCell<Media> {
+
+    public enum CellType {
+        SEARCH_RESULT,
+        LIBRARY_ITEM
+    }
+
     private final ImageView imageView = new ImageView();
     private final Label titleLabel = new Label();
-    private final Button addButton = new Button("Añadir");
     private final VBox vbox = new VBox(imageView, titleLabel);
-    private final StackPane stackPane = new StackPane();
+    private final StackPane stackPane = new StackPane(vbox);
 
     private static Image placeholderImage;
-
-    private final Consumer<Media> onAddCallback;
 
     static {
         InputStream placeholderStream = MediaGridCell.class.getResourceAsStream("/mx/uv/mediatracking/view/placeholder.png");
@@ -33,28 +36,32 @@ public class MediaGridCell extends GridCell<Media> {
         }
     }
 
-    public MediaGridCell(Consumer<Media> onAddCallback) {
-        this.onAddCallback = onAddCallback;
-
+    public MediaGridCell(Consumer<Media> onAddCallback, CellType cellType) {
         imageView.setFitHeight(180);
         imageView.setFitWidth(120);
         imageView.setPreserveRatio(true);
         titleLabel.setWrapText(true);
         vbox.setAlignment(Pos.CENTER);
-        addButton.setVisible(false);
 
-        stackPane.getChildren().addAll(vbox, addButton);
+        if (cellType == CellType.SEARCH_RESULT) {
+            Button addButton = new Button("Añadir +");
+            addButton.getStyleClass().add("add-button-overlay");
+            addButton.setVisible(false);
+
+            stackPane.getChildren().add(addButton);
+
+            stackPane.setOnMouseEntered(e -> addButton.setVisible(true));
+            stackPane.setOnMouseExited(e -> addButton.setVisible(false));
+
+            addButton.setOnAction(e -> {
+                if (getItem() != null && onAddCallback != null) {
+                    onAddCallback.accept(getItem());
+                }
+            });
+        }
+
         setGraphic(stackPane);
         setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-
-        stackPane.setOnMouseEntered(e -> addButton.setVisible(true));
-        stackPane.setOnMouseExited(e -> addButton.setVisible(false));
-
-        addButton.setOnAction(e -> {
-            if (getItem() != null) {
-                onAddCallback.accept(getItem());
-            }
-        });
     }
 
     @Override
